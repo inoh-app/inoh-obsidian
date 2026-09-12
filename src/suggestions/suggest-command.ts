@@ -52,7 +52,7 @@ export async function suggestForSelectionOrNote(host: SuggestionCommandHost): Pr
   }
   const cards = host.deckService.getCards();
   if (cards.length === 0) {
-    new Notice("Your deck is empty — add words at inoh.app, then refresh from the settings.");
+    new Notice("Your deck is empty — add words at app.inoh.app, then refresh from the settings.");
     return;
   }
   const editorView = getEditorView(editor);

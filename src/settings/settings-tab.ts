@@ -108,7 +108,7 @@ export class InohSettingsTab extends PluginSettingTab {
           "Sign in with your email — entering a new email creates an Inoh account automatically. ",
         );
         fragment.appendText("You build your vocabulary deck at ");
-        fragment.createEl("a", { text: "inoh.app", href: WEB_APP_URL });
+        fragment.createEl("a", { text: "app.inoh.app", href: WEB_APP_URL });
         fragment.appendText(" and this plugin brings it into your notes.");
       }),
       visible: () => this.isSignedOut(),
@@ -251,7 +251,7 @@ export class InohSettingsTab extends PluginSettingTab {
       render: (setting) => {
         setting.addButton((button) =>
           button
-            .setButtonText("Open inoh.app")
+            .setButtonText("Open the Inoh app")
             .setCta()
             .onClick(() => {
               openExternalUrl(WEB_APP_URL);
