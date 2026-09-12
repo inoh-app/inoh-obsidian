@@ -1,15 +1,28 @@
-/** The Inoh web app (Expo web export). Word detail lives at /word/<dictionaryId>. */
-export const WEB_APP_URL = "https://inoh.app";
+/**
+ * The Inoh web app (Expo web export). Word detail lives at /word/<dictionaryId>.
+ *
+ * Its own host since PRI-20768. inoh.app serves the marketing site, the public
+ * dictionary pages and the Stripe return pages; app.inoh.app serves the app.
+ */
+export const WEB_APP_URL = "https://app.inoh.app";
 
 /**
- * Where Stripe returns the user after checkout. Static pages on inoh.app, not
- * `obsidian://` URIs: the stripe-subscribe edge function only accepts
- * redirect URLs Inoh owns (see _shared/stripe-redirect-urls.ts in
+ * Inoh's marketing host. Separate from WEB_APP_URL because the Stripe return
+ * pages below are static HTML that stays here, so a payment receipt does not
+ * depend on the app bundle loading, and published versions of this plugin
+ * have those paths compiled in.
+ */
+export const MARKETING_URL = "https://inoh.app";
+
+/**
+ * Where Stripe returns the user after checkout. Static pages on the marketing
+ * host, not `obsidian://` URIs: the stripe-subscribe edge function only
+ * accepts redirect URLs Inoh owns (see _shared/stripe-redirect-urls.ts in
  * inoh-backend), and Stripe rejects unregistered custom schemes anyway.
  * `from` tells the page which app to send the user back to.
  */
-export const CHECKOUT_SUCCESS_URL = `${WEB_APP_URL}/checkout-success?from=obsidian`;
-export const CHECKOUT_CANCEL_URL = `${WEB_APP_URL}/checkout-cancel?from=obsidian`;
+export const CHECKOUT_SUCCESS_URL = `${MARKETING_URL}/checkout-success?from=obsidian`;
+export const CHECKOUT_CANCEL_URL = `${MARKETING_URL}/checkout-cancel?from=obsidian`;
 
 /**
  * The web app's Plan & Billing page: where subscribers upgrade, downgrade,
