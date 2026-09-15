@@ -3,8 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateLemmaCandidates } from "../matching";
 import type { AccountService } from "../subscriptions";
 import type { DeckCard, DictionaryLookupEntry } from "../types";
+import { saveWordToDrafts } from "./card-request-drafts";
 import { CardLimitError, type DeckService } from "./deck-service";
 import { findDictionaryEntries } from "./dictionary-lookup";
+import { MissingWordModal } from "./missing-word-modal";
 import { SensePickerModal } from "./sense-picker-modal";
 
 /** Same gates as the Chrome extension's selection button. */
@@ -16,6 +18,8 @@ export type AddWordHost = {
   app: App;
   supabase: SupabaseClient;
   currentUserEmail: string | null;
+  /** Needed to write a draft, which is a row owned by this user. */
+  currentUserId: string | null;
   deckService: Pick<DeckService, "addCard" | "getCards">;
   account: Pick<AccountService, "promptUpgrade">;
 };
@@ -98,7 +102,7 @@ export async function addWordToDeck(host: AddWordHost, selectedText: string): Pr
   }
 
   if (entries.length === 0) {
-    new Notice(`"${selectedText}" isn't in the Inoh dictionary yet.`);
+    _offerToWriteWordDown(host, selectedText);
     return;
   }
   if (entries.length === 1) {
@@ -108,6 +112,22 @@ export async function addWordToDeck(host: AddWordHost, selectedText: string): Pr
   new SensePickerModal(host.app, selectedText, entries, (pickedEntry) => {
     void _addEntryToDeck(host, pickedEntry);
   }).open();
+}
+
+/**
+ * Offers to save a word the dictionary does not have, so it is not simply
+ * lost. The card itself is made in the web app: see MissingWordModal.
+ */
+function _offerToWriteWordDown(host: AddWordHost, selectedText: string): void {
+  const userId = host.currentUserId;
+  if (!userId) {
+    new Notice("Sign in to Inoh first (plugin settings).");
+    return;
+  }
+
+  new MissingWordModal(host.app, selectedText, () =>
+    saveWordToDrafts(host.supabase, userId, selectedText),
+  ).open();
 }
 
 /** The word under the cursor, or an empty string when the cursor is not on one. */

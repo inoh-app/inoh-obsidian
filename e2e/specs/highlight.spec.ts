@@ -26,6 +26,8 @@ import {
 const EMAIL = 'e2e-obsidian@test.com';
 /** Matches `getHighlightClass()` in src/main.ts. */
 const HIGHLIGHT_CLASS = 'inoh-deck-word';
+/** A word no dictionary has, which is what the missing-word path is for. */
+const MISSING_WORD = 'zzzznotaword';
 
 let session: ObsidianSession;
 let account: SeededAccount;
@@ -90,4 +92,28 @@ test('adding a selected word from the editor puts it in the deck', async () => {
     .toContain(newWord);
   // And once it is a deck word, it starts getting underlined.
   await expect.poll(readHighlightedWords, { timeout: 30_000 }).toContain(newWord);
+});
+
+test('a selected word Inoh does not have is written down for later', async () => {
+  await openNote(session.page, 'capture.md', `The word ${MISSING_WORD} is in no dictionary.`);
+
+  expect(await selectWordInEditor(session.page, MISSING_WORD)).toBe(true);
+  expect(await runCommand(session.page, 'inoh:add-word-to-deck')).toBe(true);
+
+  // The card cannot be added, so the plugin offers to keep the word instead.
+  const modal = session.page.locator('.inoh-modal');
+  await expect(modal).toContainText("isn't in Inoh yet", { timeout: 30_000 });
+
+  await modal.getByRole('button', { name: 'Save to drafts' }).click();
+
+  // Reason: a draft, not a request. Nothing is generated and no allowance is
+  // spent until the user finishes the word in the web app — which is what the
+  // dialog now points at.
+  await expect
+    .poll(() => readAccountState(EMAIL).cardRequests, {
+      timeout: 30_000,
+      message: `${MISSING_WORD} is written down as a draft`,
+    })
+    .toContainEqual({ word: MISSING_WORD, status: 'draft' });
+  await expect(modal.getByRole('button', { name: 'Open Inoh' })).toBeVisible();
 });
