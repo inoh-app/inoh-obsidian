@@ -31,6 +31,12 @@ export const CHECKOUT_CANCEL_URL = `${MARKETING_URL}/checkout-cancel?from=obsidi
  */
 export const BILLING_URL = `${WEB_APP_URL}/billing`;
 
+/**
+ * The web app's Generate tab: where a word written down here is finished. Why
+ * the word is only written down: see `deck/card-request-drafts`.
+ */
+export const GENERATE_URL = `${WEB_APP_URL}/generate`;
+
 /** Product pages for the other Inoh ecosystem apps, shown in the Apps settings group. */
 export const IOS_APP_URL = "https://apps.apple.com/app/id6799947889";
 export const CHROME_EXTENSION_URL =
