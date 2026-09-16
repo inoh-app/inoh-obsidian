@@ -60,6 +60,29 @@ test('the status bar reports the signed-in deck size', async () => {
   );
 });
 
+test('settings read plan, account, apps, sign out — and the account row is read-only', async () => {
+  const settings = await openPluginSettings(session.page);
+  try {
+    const headings = await settings
+      .locator('.setting-item-heading .setting-item-name')
+      .allInnerTexts();
+    expect(headings).toEqual(['Plan', 'Account', 'Highlighting', 'Apps']);
+
+    // Reason: the account is read-only here — the name and email are changed
+    // in the Inoh app — so Refresh is the only control on the row, and
+    // signing out is its own card at the foot.
+    const accountRow = settings.locator('.setting-item', { hasText: '@test.com' }).first();
+    await expect(accountRow.locator('button')).toHaveText(['Refresh']);
+
+    const signOutRow = settings.locator('.setting-item', { hasText: 'Sign out' }).last();
+    await signOutRow.scrollIntoViewIfNeeded();
+    await expect(signOutRow.locator('button')).toHaveText(['Sign out']);
+  } finally {
+    // A settings window left open would break the editor tests that follow.
+    await closeSettings(session.page);
+  }
+});
+
 test('the Apps group lists the MCP server, with a mark that rendered', async () => {
   const settings = await openPluginSettings(session.page);
   try {
