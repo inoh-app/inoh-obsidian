@@ -411,6 +411,21 @@ div.inoh-add-word-popup.inoh-add-word-popup-answer {
   color: var(--inoh-card-text-secondary);
 }
 
+/* Spins while the word is being looked up and added. Shares the keyframes
+   with the checkout buttons' spinner at the foot of this file. */
+.inoh-add-word-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: inoh-spin 0.7s linear infinite;
+}
+
 .inoh-add-word-message-added {
   color: var(--inoh-green);
   font-weight: var(--font-semibold);
@@ -659,9 +674,15 @@ button.inoh-button-loading::after {
   color: var(--inoh-card-text);
 }
 
-/* The line under a dialog's primary button, saying where the rest happens. */
+/* The line under a dialog's primary button, saying where the rest happens —
+   and, once the word is kept, that it was. */
 .inoh-modal .inoh-modal-caption {
   margin-top: 8px;
   font-size: var(--font-ui-smaller);
   color: var(--inoh-card-text-muted);
+}
+
+.inoh-modal .inoh-modal-caption-saved {
+  color: var(--inoh-green);
+  font-weight: var(--font-semibold);
 }

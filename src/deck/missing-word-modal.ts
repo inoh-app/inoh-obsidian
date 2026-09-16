@@ -11,9 +11,16 @@ import type { SaveDraftResult } from "./card-request-drafts";
  *
  * So this dialog does the one thing a note-taking app is well placed to do:
  * catch the word before it is lost, and hand it over.
+ *
+ * Saving does not replace the dialog with a second screen. The one button
+ * becomes the next step and the line under it says what happened, because the
+ * two states are the same two sentences either way, and a dialog that rebuilds
+ * itself reads as a new question rather than an answer to the one just asked.
  */
 export class MissingWordModal extends Modal {
   private isSaving = false;
+  private actionButton!: HTMLButtonElement;
+  private captionEl!: HTMLElement;
 
   constructor(
     app: App,
@@ -49,64 +56,55 @@ export class MissingWordModal extends Modal {
 
   /** The dialog as it opens: what happened, and the one thing to do about it. */
   private renderOffer(): void {
-    this.contentEl.empty();
     this.setTitle(`"${this.word}" isn't in the public dictionary`);
 
-    const saveButton = this.contentEl.createEl("button", {
+    this.actionButton = this.contentEl.createEl("button", {
       cls: "mod-cta",
       text: "Save to Drafts",
     });
-    saveButton.addEventListener("click", () => void this.saveWord(saveButton));
+    // Reason: assigned rather than added. Saving turns this same button into
+    // Open Inoh, and an assignment replaces the handler where addEventListener
+    // would leave the old one to fire alongside the new.
+    this.actionButton.onclick = () => void this.saveWord();
 
-    this.contentEl.createDiv({
+    this.captionEl = this.contentEl.createDiv({
       cls: "inoh-modal-caption",
       text: `Generate a card later at ${WEB_APP_HOST}`,
     });
   }
 
-  /**
-   * Writes the word down, then swaps the dialog for the way to Inoh.
-   *
-   * Reason: the dialog stays open rather than closing onto a Notice. The word
-   * is only half-handled once it is saved — the card still has to be made in
-   * the web app — so the link there has to survive the save, and a Notice
-   * cannot be clicked on mobile.
-   */
-  private async saveWord(saveButton: HTMLButtonElement): Promise<void> {
+  /** Writes the word down, then turns the button into the way to Inoh. */
+  private async saveWord(): Promise<void> {
     if (this.isSaving) return;
     this.isSaving = true;
-    saveButton.disabled = true;
-    saveButton.addClass("inoh-button-loading");
+    this.actionButton.disabled = true;
+    this.actionButton.addClass("inoh-button-loading");
 
     try {
       const result = await this.onSaveWord();
-      this.renderSaved(result);
+      this.showSaved(result);
     } catch (error) {
       new Notice(error instanceof Error ? error.message : String(error));
-      saveButton.disabled = false;
-      saveButton.removeClass("inoh-button-loading");
+      this.actionButton.disabled = false;
+      this.actionButton.removeClass("inoh-button-loading");
     } finally {
       this.isSaving = false;
     }
   }
 
-  /** The dialog once the word is written down: where to go to make the card. */
-  private renderSaved(result: SaveDraftResult): void {
-    this.contentEl.empty();
-    this.setTitle(result === "saved" ? "Saved to your drafts" : "Already in your drafts");
-
-    const openButton = this.contentEl.createEl("button", {
-      cls: "mod-cta",
-      text: "Open Inoh",
-    });
-    openButton.addEventListener("click", () => {
+  /** The same dialog, now saying the word is kept and where to finish it. */
+  private showSaved(result: SaveDraftResult): void {
+    this.actionButton.disabled = false;
+    this.actionButton.removeClass("inoh-button-loading");
+    this.actionButton.setText("Open Inoh");
+    this.actionButton.onclick = () => {
       openExternalUrl(GENERATE_URL);
       this.close();
-    });
+    };
 
-    this.contentEl.createDiv({
-      cls: "inoh-modal-caption",
-      text: `Generate the card at ${WEB_APP_HOST}`,
-    });
+    this.captionEl.addClass("inoh-modal-caption-saved");
+    this.captionEl.setText(
+      result === "saved" ? "Saved to your drafts ✓" : "Already in your drafts ✓",
+    );
   }
 }

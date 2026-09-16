@@ -157,5 +157,9 @@ test('a selected word Inoh does not have is written down for later', async () =>
       message: `${MISSING_WORD} is written down as a draft`,
     })
     .toContainEqual({ word: MISSING_WORD, status: 'draft' });
+  // Reason: the same dialog, not a second one — the button it offered has
+  // become the next step and the line under it says the word is kept.
   await expect(modal.getByRole('button', { name: 'Open Inoh' })).toBeVisible();
+  await expect(modal.locator('.inoh-modal-caption-saved')).toContainText('drafts');
+  await expect(modal.getByRole('button', { name: 'Save to Drafts' })).toHaveCount(0);
 });
