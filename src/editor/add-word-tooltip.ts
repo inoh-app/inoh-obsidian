@@ -1,5 +1,6 @@
 import { StateEffect, StateField, type Extension } from "@codemirror/state";
 import { showTooltip, ViewPlugin, type EditorView, type Tooltip } from "@codemirror/view";
+import { WEB_APP_URL } from "../constants";
 import type { AddWordOutcome } from "../types";
 
 /**
@@ -18,9 +19,6 @@ import type { AddWordOutcome } from "../types";
 
 /** Selections still change while the mouse drags; show only once they settle. */
 const SELECTION_SETTLE_MS = 300;
-
-/** How long the answer stays up before the popup takes itself away. */
-const FEEDBACK_LINGER_MS = 2400;
 
 export type AddWordTooltipOptions = {
   /** Whether the popup should appear for this selection (addable, signed in, not in deck). */
@@ -88,6 +86,25 @@ function buildAddWordPopup(
         }
         message.appendText(text);
         reposition();
+        return popup;
+      };
+
+      /**
+       * The card the word just became, so "Added to your deck" is somewhere to
+       * go rather than only something to read.
+       *
+       * The popup is not on a timer: it clears itself on the next keystroke or
+       * selection change, which is soon enough, and a link that vanished after
+       * two seconds was one nobody could reach.
+       */
+      const showAddedCard = (word: string, dictionaryId: string) => {
+        showMessage("Added to your deck ✓", "added").createEl("a", {
+          cls: "inoh-add-word-link",
+          text: `View "${word}" in Inoh`,
+          href: `${WEB_APP_URL}/word/${dictionaryId}`,
+          attr: { target: "_blank", rel: "noopener" },
+        });
+        reposition();
       };
 
       const addWord = async () => {
@@ -97,12 +114,10 @@ function buildAddWordPopup(
 
         switch (outcome.kind) {
           case "added":
-            showMessage(`Added to your deck ✓`, "added");
-            window.setTimeout(dismiss, FEEDBACK_LINGER_MS);
+            showAddedCard(outcome.word, outcome.dictionaryId);
             return;
           case "already-in-deck":
             showMessage("Already in your deck", "added");
-            window.setTimeout(dismiss, FEEDBACK_LINGER_MS);
             return;
           case "failed":
             showMessage(outcome.message, "failed");

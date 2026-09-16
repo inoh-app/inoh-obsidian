@@ -40,6 +40,23 @@ export class MissingWordModal extends Modal {
     removeModalCloseButtons(this.containerEl);
     this.renderCloseButton();
     this.renderOffer();
+    this.dropAutomaticFocus();
+  }
+
+  /**
+   * Leaves the dialog with nothing focused.
+   *
+   * Reason: Obsidian focuses a dialog's first button on open, and the theme
+   * paints a 3px ring around whatever is focused — so opening this with the
+   * mouse drew a keyboard affordance nobody had asked for, which read as a
+   * stray border on the button. Tabbing to the button still shows the ring,
+   * which is the one time it means something.
+   *
+   * On a timer because the focus lands after onOpen returns, so blurring
+   * inside it would run first and change nothing.
+   */
+  private dropAutomaticFocus(): void {
+    window.setTimeout(() => this.actionButton.blur(), 0);
   }
 
   override onClose(): void {
@@ -67,9 +84,12 @@ export class MissingWordModal extends Modal {
     // would leave the old one to fire alongside the new.
     this.actionButton.onclick = () => void this.saveWord();
 
-    this.captionEl = this.contentEl.createDiv({
-      cls: "inoh-modal-caption",
-      text: `Generate a card later at ${WEB_APP_HOST}`,
+    this.captionEl = this.contentEl.createDiv({ cls: "inoh-modal-caption" });
+    this.captionEl.appendText("Generate a card later at ");
+    this.captionEl.createEl("a", {
+      text: WEB_APP_HOST,
+      href: GENERATE_URL,
+      attr: { target: "_blank", rel: "noopener" },
     });
   }
 
@@ -103,6 +123,8 @@ export class MissingWordModal extends Modal {
     };
 
     this.captionEl.addClass("inoh-modal-caption-saved");
+    // setText clears the link along with the sentence it sat in, which is
+    // right: the button below now goes to the same place.
     this.captionEl.setText(
       result === "saved" ? "Saved to your drafts ✓" : "Already in your drafts ✓",
     );
