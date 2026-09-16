@@ -36,6 +36,21 @@ export type Deck = {
   is_default?: boolean;
 };
 
+/**
+ * What became of a word the user asked to add.
+ *
+ * Reason: the add flow returns this rather than announcing itself. The same
+ * add is started from the selection popup, the command palette and the mobile
+ * long-press menu, and only the popup has somewhere to show the answer in
+ * place — so who reports it, and how, belongs to the caller.
+ */
+export type AddWordOutcome =
+  | { kind: "added"; word: string }
+  | { kind: "already-in-deck"; word: string }
+  /** A dialog took over: the sense picker, the missing-word offer, or the upgrade prompt. */
+  | { kind: "handed-over" }
+  | { kind: "failed"; message: string };
+
 /** One dictionary hit for selected text — enough to pick a sense and add it. */
 export type DictionaryLookupEntry = {
   id: string;

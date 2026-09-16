@@ -6,6 +6,9 @@
  */
 export const WEB_APP_URL = "https://app.inoh.app";
 
+/** The same host without its scheme, for the captions that name it in prose. */
+export const WEB_APP_HOST = "app.inoh.app";
+
 /**
  * Inoh's marketing host. Separate from WEB_APP_URL because the Stripe return
  * pages below are static HTML that stays here, so a payment receipt does not
@@ -36,6 +39,13 @@ export const BILLING_URL = `${WEB_APP_URL}/billing`;
  * the word is only written down: see `deck/card-request-drafts`.
  */
 export const GENERATE_URL = `${WEB_APP_URL}/generate`;
+
+/**
+ * The docs host, which is where the Apps group's MCP row goes. The
+ * instructions rather than the server address `https://mcp.inoh.app/mcp`,
+ * which answers a browser with a 405 and tells a user nothing.
+ */
+export const DOCS_URL = "https://docs.inoh.app";
 
 /** Product pages for the other Inoh ecosystem apps, shown in the Apps settings group. */
 export const IOS_APP_URL = "https://apps.apple.com/app/id6799947889";

@@ -1,6 +1,7 @@
 import { setIcon, type SettingDefinition } from "obsidian";
 import {
   CHROME_EXTENSION_URL,
+  DOCS_URL,
   IOS_APP_URL,
   RAYCAST_EXTENSION_URL,
   WEB_APP_URL,
@@ -20,6 +21,10 @@ export function appsDefinitions(): SettingDefinition[] {
     { name: "Web app", icon: "globe", url: WEB_APP_URL },
     { name: "Chrome extension", icon: APP_ICON_IDS.chrome, url: CHROME_EXTENSION_URL },
     { name: "Raycast extension", icon: APP_ICON_IDS.raycast, url: RAYCAST_EXTENSION_URL },
+    // Reason: a robot rather than a brand mark, the same choice inoh.app
+    // makes, because this row is not one product — it is every assistant that
+    // can connect. It opens the instructions, not the server address.
+    { name: "MCP server", icon: "bot", url: DOCS_URL },
   ];
   return apps.map(({ name, icon, url }) => ({
     name,
