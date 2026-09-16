@@ -1,9 +1,15 @@
-/* Inoh brand colors — match the iOS app's `colors` ("Quiet Canvas" palette)
-   in src/theme.ts: red is the button color, green is the positive-feedback
-   color (correct answers, success states). */
+/* Inoh brand colors.
+
+   The red pair is inoh.app's, straight from the tokens the site calls "straight
+   from the logo" (`--coral-deep` and the hover its primary CTA uses, in
+   inoh/public/styles.css). The iOS app's own red is a brighter #e1442a; the
+   plugin sits next to the web app and the site, so it follows those.
+
+   Green stays the app's positive-feedback color, for correct answers and
+   success states. */
 body {
-  --inoh-brand: #e1442a;
-  --inoh-brand-deep: #c63a22;
+  --inoh-brand: #c94e33;
+  --inoh-brand-deep: #a83c28;
   --inoh-green: #12bb4f;
   /* Quiet Canvas card surface — fixed colors from the Inoh app's theme,
      matching the browser extension's word card, so the card stands out from
@@ -431,6 +437,23 @@ div.inoh-add-word-popup.inoh-add-word-popup-answer {
   font-weight: var(--font-semibold);
 }
 
+/* The card the word became. Its own line under the confirmation, in the brand
+   red rather than the theme's link color, which is a blue that fights the
+   cream surface. */
+a.inoh-add-word-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--inoh-brand);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+}
+
+a.inoh-add-word-link:hover {
+  color: var(--inoh-brand-deep);
+  text-decoration: underline;
+}
+
 .inoh-add-word-message-failed {
   color: var(--inoh-brand-deep);
 }
@@ -680,6 +703,17 @@ button.inoh-button-loading::after {
   margin-top: 8px;
   font-size: var(--font-ui-smaller);
   color: var(--inoh-card-text-muted);
+}
+
+/* Same treatment for the host named in a caption. */
+.inoh-modal .inoh-modal-caption a {
+  color: var(--inoh-brand);
+  text-decoration: none;
+}
+
+.inoh-modal .inoh-modal-caption a:hover {
+  color: var(--inoh-brand-deep);
+  text-decoration: underline;
 }
 
 .inoh-modal .inoh-modal-caption-saved {

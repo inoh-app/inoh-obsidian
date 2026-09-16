@@ -210,7 +210,7 @@ async function _addEntryToDeck(
 
   try {
     await host.deckService.addCard(entry.id);
-    return { kind: "added", word: entry.word };
+    return { kind: "added", word: entry.word, dictionaryId: entry.id };
   } catch (error) {
     if (error instanceof CardLimitError) {
       // The server owns the plan limits, so its message is the only place the

@@ -45,7 +45,8 @@ export type Deck = {
  * place — so who reports it, and how, belongs to the caller.
  */
 export type AddWordOutcome =
-  | { kind: "added"; word: string }
+  /** `dictionaryId` so the popup can link to the card it just made. */
+  | { kind: "added"; word: string; dictionaryId: string }
   | { kind: "already-in-deck"; word: string }
   /** A dialog took over: the sense picker, the missing-word offer, or the upgrade prompt. */
   | { kind: "handed-over" }

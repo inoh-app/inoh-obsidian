@@ -129,6 +129,11 @@ test('the selection popup reports the outcome in itself, not in the corner', asy
   await expect(session.page.locator('.inoh-add-word-message-added')).toContainText('deck', {
     timeout: 30_000,
   });
+  // Reason: the confirmation is somewhere to go, not only something to read.
+  await expect(session.page.locator('a.inoh-add-word-link')).toHaveAttribute(
+    'href',
+    /\/word\/[0-9a-f-]{36}$/,
+  );
   await expect
     .poll(() => readAccountState(EMAIL).words, { timeout: 30_000 })
     .toContain(newWord);
@@ -145,6 +150,11 @@ test('a selected word Inoh does not have is written down for later', async () =>
   await expect(modal).toContainText("isn't in the public dictionary", { timeout: 30_000 });
   // The × is the only way out; the "Not now" link is gone.
   await expect(modal.locator('.inoh-modal-close')).toBeVisible();
+  // Reason: Obsidian focuses a dialog's first button on open, and the theme
+  // rings whatever is focused — which read as a stray border on the button.
+  await expect(modal.locator('button.mod-cta')).not.toBeFocused();
+  // The host in the caption is a link, not just prose.
+  await expect(modal.locator('.inoh-modal-caption a')).toHaveAttribute('href', /app\.inoh\.app/);
 
   await modal.getByRole('button', { name: 'Save to Drafts' }).click();
 
