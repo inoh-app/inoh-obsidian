@@ -94,7 +94,9 @@ export default class InohPlugin extends Plugin implements MatcherProvider {
                 this.currentUserEmail !== null &&
                 isAddableWord(selectedText) &&
                 !isWordInDeck(this.deckService.getCards(), selectedText),
-              onAddWord: (selectedText) => void addWordToDeck(this, selectedText),
+              // Reason: returned, not swallowed. The popup renders the
+              // outcome itself, in place of the pill the user just clicked.
+              onAddWord: (selectedText) => addWordToDeck(this, selectedText),
             }),
           ]),
     ]);

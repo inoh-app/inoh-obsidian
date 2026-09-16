@@ -60,6 +60,27 @@ test('the status bar reports the signed-in deck size', async () => {
   );
 });
 
+test('the Apps group lists the MCP server, with a mark that rendered', async () => {
+  const settings = await openPluginSettings(session.page);
+  try {
+    const mcpRow = settings.locator('.setting-item-name', { hasText: 'MCP server' });
+    await expect(mcpRow).toHaveCount(1, { timeout: 30_000 });
+    // Reason: the Apps group is the last one on the tab, so in a short window
+    // the row is attached but scrolled past — the same reason the fixture
+    // forces its clicks on Obsidian's own nav rows.
+    await mcpRow.scrollIntoViewIfNeeded();
+    await expect(mcpRow).toBeVisible();
+
+    // Reason: setIcon on a name Obsidian does not know leaves an empty span,
+    // so the row would read as text with a gap where every other app has a
+    // mark.
+    await expect(mcpRow.locator('.inoh-app-icon svg')).toBeVisible();
+  } finally {
+    // A settings window left open would break the editor tests that follow.
+    await closeSettings(session.page);
+  }
+});
+
 test('a deck word written in a note is underlined; a non-deck word is not', async () => {
   const deckWord = account.words[0];
   const otherWord = account.spareWords[0];
@@ -94,6 +115,25 @@ test('adding a selected word from the editor puts it in the deck', async () => {
   await expect.poll(readHighlightedWords, { timeout: 30_000 }).toContain(newWord);
 });
 
+test('the selection popup reports the outcome in itself, not in the corner', async () => {
+  const newWord = account.spareWords[1];
+  await openNote(session.page, 'capture.md', `The word ${newWord} is worth learning.`);
+
+  expect(await selectWordInEditor(session.page, newWord)).toBe(true);
+  // Reason: the popup follows a settled selection rather than the command, so
+  // this is the only path that exercises the in-place answer.
+  const addButton = session.page.locator('.inoh-add-word-button');
+  await expect(addButton).toBeVisible({ timeout: 30_000 });
+  await addButton.click();
+
+  await expect(session.page.locator('.inoh-add-word-message-added')).toContainText('deck', {
+    timeout: 30_000,
+  });
+  await expect
+    .poll(() => readAccountState(EMAIL).words, { timeout: 30_000 })
+    .toContain(newWord);
+});
+
 test('a selected word Inoh does not have is written down for later', async () => {
   await openNote(session.page, 'capture.md', `The word ${MISSING_WORD} is in no dictionary.`);
 
@@ -102,9 +142,11 @@ test('a selected word Inoh does not have is written down for later', async () =>
 
   // The card cannot be added, so the plugin offers to keep the word instead.
   const modal = session.page.locator('.inoh-modal');
-  await expect(modal).toContainText("isn't in Inoh yet", { timeout: 30_000 });
+  await expect(modal).toContainText("isn't in the public dictionary", { timeout: 30_000 });
+  // The × is the only way out; the "Not now" link is gone.
+  await expect(modal.locator('.inoh-modal-close')).toBeVisible();
 
-  await modal.getByRole('button', { name: 'Save to drafts' }).click();
+  await modal.getByRole('button', { name: 'Save to Drafts' }).click();
 
   // Reason: a draft, not a request. Nothing is generated and no allowance is
   // spent until the user finishes the word in the web app — which is what the

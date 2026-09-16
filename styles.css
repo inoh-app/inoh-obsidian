@@ -378,12 +378,53 @@ button.inoh-sense-option strong {
   color: var(--inoh-card-text);
 }
 
-/* Selection add-button: floating pill above a selected word. The doubled
-   class plus tooltip anchor outweighs theme button rules like
+/* The selection popup.
+   CodeMirror puts its own `cm-tooltip` class on whatever element the tooltip
+   hands it, so this container IS the tooltip — which is why the rules here
+   reach the pill as a descendant rather than through `.cm-tooltip >`. That
+   older selector matched nothing, and the pill fell back to the theme's
+   button styling: a pale box with accent-colored text.
+   The container itself carries no chrome in its resting state; the pill
+   inside is the whole popup. */
+div.inoh-add-word-popup.inoh-add-word-popup {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  z-index: var(--layer-tooltip);
+}
+
+/* Once the pill has been pressed, the container becomes the card the answer
+   is written in — the Quiet Canvas surface, like the deck-word tooltip. */
+div.inoh-add-word-popup.inoh-add-word-popup-answer {
+  max-width: 280px;
+  padding: 8px 12px;
+  background-color: var(--inoh-card-bg);
+  border: 1px solid var(--inoh-card-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(26, 24, 21, 0.14);
+}
+
+.inoh-add-word-message {
+  font-size: var(--font-ui-small);
+  line-height: 1.45;
+  color: var(--inoh-card-text-secondary);
+}
+
+.inoh-add-word-message-added {
+  color: var(--inoh-green);
+  font-weight: var(--font-semibold);
+}
+
+.inoh-add-word-message-failed {
+  color: var(--inoh-brand-deep);
+}
+
+/* The pill. Both classes plus the tooltip context out-weigh Obsidian's own
    `.theme-dark button:not(.clickable-icon)`, which washed the brand
    background out; `background` (not background-color) also clears any
    theme button gradient. */
-.cm-tooltip > button.inoh-add-word-button.inoh-add-word-button {
+.cm-tooltip button.inoh-add-word-button.inoh-add-word-button {
   padding: 5px 12px;
   background: var(--inoh-brand);
   color: #fff;
@@ -393,7 +434,6 @@ button.inoh-sense-option strong {
   font-size: var(--font-ui-small);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  z-index: var(--layer-tooltip);
   transition:
     background 0.15s ease,
     transform 0.15s ease,
@@ -402,16 +442,15 @@ button.inoh-sense-option strong {
 
 /* Brand and brand-deep are near-identical reds, so the color shift alone
    reads as no hover feedback — the lift and shadow carry it. */
-.cm-tooltip > button.inoh-add-word-button.inoh-add-word-button:hover {
+.cm-tooltip button.inoh-add-word-button.inoh-add-word-button:hover {
   background: var(--inoh-brand-deep);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(26, 24, 21, 0.28);
 }
 
-/* The pill carries all the chrome; strip CodeMirror's tooltip box. */
-.cm-tooltip.cm-tooltip:has(> button.inoh-add-word-button) {
-  background-color: transparent;
-  border: none;
+.cm-tooltip button.inoh-add-word-button.inoh-add-word-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(26, 24, 21, 0.24);
 }
 
 /* ========= Upgrade modal plan cards ========= */
@@ -582,4 +621,47 @@ button.inoh-button-loading::after {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ========= The missing-word dialog ========= */
+
+/* Anchors the × below, which sits in the card's own top corner rather than
+   wherever the platform puts Obsidian's. */
+.modal.inoh-missing-word-modal {
+  position: relative;
+}
+
+/* Leaves room for the × so a long word cannot run under it. */
+.inoh-missing-word-modal .modal-title {
+  padding-right: 32px;
+}
+
+.inoh-modal button.inoh-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 6px;
+  color: var(--inoh-card-text-muted);
+  cursor: pointer;
+}
+
+.inoh-modal button.inoh-modal-close:hover {
+  background-color: var(--inoh-card-button-bg);
+  color: var(--inoh-card-text);
+}
+
+/* The line under a dialog's primary button, saying where the rest happens. */
+.inoh-modal .inoh-modal-caption {
+  margin-top: 8px;
+  font-size: var(--font-ui-smaller);
+  color: var(--inoh-card-text-muted);
 }

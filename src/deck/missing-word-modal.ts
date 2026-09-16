@@ -1,11 +1,11 @@
-import { Modal, Notice, Platform, type App } from "obsidian";
-import { GENERATE_URL } from "../constants";
+import { Modal, Notice, setIcon, type App } from "obsidian";
+import { GENERATE_URL, WEB_APP_HOST } from "../constants";
 import { removeModalCloseButtons } from "../editor";
 import { openExternalUrl } from "../ui";
 import type { SaveDraftResult } from "./card-request-drafts";
 
 /**
- * What the plugin offers for a selected word the Inoh dictionary does not
+ * What the plugin offers for a selected word the public dictionary does not
  * have: write it down, then finish it in the web app. Why the card is not made
  * here, and why no dictionary is chosen here, is in `card-request-drafts`.
  *
@@ -25,11 +25,13 @@ export class MissingWordModal extends Modal {
 
   override onOpen(): void {
     this.modalEl.addClass("inoh-modal");
-    // Mobile's dialog X is an oversized circle that fights the cream card;
-    // tap-outside and swipe-down still close. Desktop keeps its small ×.
-    if (Platform.isMobile) {
-      removeModalCloseButtons(this.containerEl);
-    }
+    this.modalEl.addClass("inoh-missing-word-modal");
+    // Reason: Obsidian's own close button is dropped on both platforms and
+    // replaced below. Desktop put a small × outside the cream card and mobile
+    // an oversized circle on top of it; one × in the card's top corner is the
+    // same control in the same place everywhere.
+    removeModalCloseButtons(this.containerEl);
+    this.renderCloseButton();
     this.renderOffer();
   }
 
@@ -37,27 +39,29 @@ export class MissingWordModal extends Modal {
     this.contentEl.empty();
   }
 
+  /** The × in the top corner, which is the only way to dismiss this dialog. */
+  private renderCloseButton(): void {
+    const closeButton = this.modalEl.createEl("button", { cls: "inoh-modal-close" });
+    setIcon(closeButton, "x");
+    closeButton.setAttribute("aria-label", "Close");
+    closeButton.addEventListener("click", () => this.close());
+  }
+
   /** The dialog as it opens: what happened, and the one thing to do about it. */
   private renderOffer(): void {
     this.contentEl.empty();
-    this.setTitle(`"${this.word}" isn't in Inoh yet`);
-
-    this.contentEl.createEl("p", {
-      text: "Save it to your drafts and finish it in Inoh, where you can generate your own card for it or request it for the public dictionary.",
-    });
+    this.setTitle(`"${this.word}" isn't in the public dictionary`);
 
     const saveButton = this.contentEl.createEl("button", {
       cls: "mod-cta",
-      text: "Save to drafts",
+      text: "Save to Drafts",
     });
     saveButton.addEventListener("click", () => void this.saveWord(saveButton));
 
-    const linkRow = this.contentEl.createDiv({ cls: "inoh-modal-link-row" });
-    const dismissButton = linkRow.createEl("button", {
-      cls: "inoh-modal-link",
-      text: "Not now",
+    this.contentEl.createDiv({
+      cls: "inoh-modal-caption",
+      text: `Generate a card later at ${WEB_APP_HOST}`,
     });
-    dismissButton.addEventListener("click", () => this.close());
   }
 
   /**
@@ -91,10 +95,6 @@ export class MissingWordModal extends Modal {
     this.contentEl.empty();
     this.setTitle(result === "saved" ? "Saved to your drafts" : "Already in your drafts");
 
-    this.contentEl.createEl("p", {
-      text: `"${this.word}" is waiting in Inoh. Open the Generate tab to say what it means and make the card.`,
-    });
-
     const openButton = this.contentEl.createEl("button", {
       cls: "mod-cta",
       text: "Open Inoh",
@@ -104,11 +104,9 @@ export class MissingWordModal extends Modal {
       this.close();
     });
 
-    const linkRow = this.contentEl.createDiv({ cls: "inoh-modal-link-row" });
-    const laterButton = linkRow.createEl("button", {
-      cls: "inoh-modal-link",
-      text: "Later",
+    this.contentEl.createDiv({
+      cls: "inoh-modal-caption",
+      text: `Generate the card at ${WEB_APP_HOST}`,
     });
-    laterButton.addEventListener("click", () => this.close());
   }
 }

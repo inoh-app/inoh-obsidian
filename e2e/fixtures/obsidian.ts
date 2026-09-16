@@ -15,21 +15,21 @@
  *     disposable.
  */
 
-import { expect, chromium, type Browser, type Page } from '@playwright/test';
-import { spawn, type ChildProcess } from 'node:child_process';
-import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
-import path from 'node:path';
+import { expect, chromium, type Browser, type Page } from "@playwright/test";
+import { spawn, type ChildProcess } from "node:child_process";
+import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import path from "node:path";
 
 const OBSIDIAN_BINARY =
-  process.env.OBSIDIAN_BINARY ?? '/Applications/Obsidian.app/Contents/MacOS/Obsidian';
-const VAULT_PATH = path.resolve(process.cwd(), 'e2e/fixtures/vault');
-const PLUGIN_ID = 'inoh';
+  process.env.OBSIDIAN_BINARY ?? "/Applications/Obsidian.app/Contents/MacOS/Obsidian";
+const VAULT_PATH = path.resolve(process.cwd(), "e2e/fixtures/vault");
+const PLUGIN_ID = "inoh";
 const DEBUG_PORT = Number(process.env.OBSIDIAN_DEBUG_PORT ?? 9222);
 const STARTUP_TIMEOUT_MS = 60_000;
 
 /** Where the real install keeps its self-updated app bundles. */
-const INSTALLED_USER_DATA_DIR = path.join(homedir(), 'Library/Application Support/obsidian');
+const INSTALLED_USER_DATA_DIR = path.join(homedir(), "Library/Application Support/obsidian");
 
 /**
  * Copies the newest self-updated app bundle into the throwaway config
@@ -55,10 +55,7 @@ function copyUpdatedAppBundle(userDataDir: string): string | null {
   if (!newest) {
     return null;
   }
-  copyFileSync(
-    path.join(INSTALLED_USER_DATA_DIR, newest),
-    path.join(userDataDir, newest),
-  );
+  copyFileSync(path.join(INSTALLED_USER_DATA_DIR, newest), path.join(userDataDir, newest));
   return newest;
 }
 
@@ -94,31 +91,40 @@ async function connectWhenReady(): Promise<Browser> {
  * @returns The app window plus a teardown that quits the app
  */
 export async function startObsidian(): Promise<ObsidianSession> {
-  const userDataDir = mkdtempSync(path.join(tmpdir(), 'inoh-obsidian-e2e-'));
+  const userDataDir = mkdtempSync(path.join(tmpdir(), "inoh-obsidian-e2e-"));
   const appBundle = copyUpdatedAppBundle(userDataDir);
   if (!appBundle) {
     console.warn(
-      'No self-updated Obsidian bundle found; falling back to the version inside the .app, ' +
+      "No self-updated Obsidian bundle found; falling back to the version inside the .app, " +
         "which may be older than the plugin's minAppVersion.",
     );
   }
   // Registering the vault as already open skips the vault picker.
   writeFileSync(
-    path.join(userDataDir, 'obsidian.json'),
+    path.join(userDataDir, "obsidian.json"),
     JSON.stringify({ vaults: { e2efixturevault: { path: VAULT_PATH, ts: 1, open: true } } }),
   );
 
   const app: ChildProcess = spawn(
     OBSIDIAN_BINARY,
     [`--user-data-dir=${userDataDir}`, `--remote-debugging-port=${DEBUG_PORT}`],
-    { stdio: 'ignore', detached: false },
+    { stdio: "ignore", detached: false },
   );
 
   const browser = await connectWhenReady();
   const page = browser.contexts()[0].pages()[0];
-  await page.waitForFunction(() => !!(window as never as { app?: unknown }).app, null, {
-    timeout: STARTUP_TIMEOUT_MS,
-  });
+  // Reason: waits for the plugin manager, not just for `app`. Obsidian sets
+  // `window.app` while it is still showing its "Loading plugins…" splash, so
+  // waiting on `app` alone returned a window whose `app.plugins` was still
+  // undefined — and the enable step below died on it, at random, depending on
+  // how long the splash took.
+  await page.waitForFunction(
+    () =>
+      typeof (window as never as { app?: { plugins?: { setEnable?: unknown } } }).app?.plugins
+        ?.setEnable === "function",
+    null,
+    { timeout: STARTUP_TIMEOUT_MS },
+  );
 
   // A fresh config directory starts in Restricted Mode, where community
   // plugins never load. Lifting it through the API is deterministic, where
@@ -197,7 +203,7 @@ export async function openNote(page: Page, fileName: string, contents: string): 
       } else {
         await obsidian.vault.create(name, body);
       }
-      await obsidian.workspace.openLinkText(name, '');
+      await obsidian.workspace.openLinkText(name, "");
     },
     { fileName, contents },
   );
@@ -222,7 +228,7 @@ export const runCommand = (page: Page, commandId: string) =>
  * @param pluginName - The plugin's display name from manifest.json
  * @returns The settings window, scrolled to the plugin's tab
  */
-export async function openPluginSettings(page: Page, pluginName = 'Inoh'): Promise<Page> {
+export async function openPluginSettings(page: Page, pluginName = "Inoh"): Promise<Page> {
   const context = page.context();
   const alreadyOpen = context.pages().find((candidate) => candidate !== page);
   if (!alreadyOpen) {
@@ -232,7 +238,7 @@ export async function openPluginSettings(page: Page, pluginName = 'Inoh'): Promi
   }
   const settings = await waitForSettingsWindow(page);
 
-  const tab = settings.locator('.vertical-tab-nav-item').filter({ hasText: pluginName }).first();
+  const tab = settings.locator(".vertical-tab-nav-item").filter({ hasText: pluginName }).first();
   await tab.scrollIntoViewIfNeeded();
   // Reason: the community-plugin tabs sit below the fold in a short window, and
   // Obsidian's own nav rows report as not visible to Playwright's actionability
@@ -247,12 +253,12 @@ async function waitForSettingsWindow(page: Page): Promise<Page> {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     const settings = context.pages().find((candidate) => candidate !== page);
-    if (settings && (await settings.locator('.vertical-tab-nav-item').count()) > 0) {
+    if (settings && (await settings.locator(".vertical-tab-nav-item").count()) > 0) {
       return settings;
     }
     await sleep(250);
   }
-  throw new Error('Obsidian never opened its settings window.');
+  throw new Error("Obsidian never opened its settings window.");
 }
 
 /**
@@ -270,16 +276,16 @@ export async function signInThroughSettings(
   email: string,
   readCode: (sinceMs: number) => string,
 ): Promise<void> {
-  await settings.getByText('Sign in or sign up', { exact: true }).first().click({ force: true });
+  await settings.getByText("Sign in or sign up", { exact: true }).first().click({ force: true });
 
-  await settings.getByPlaceholder('you@example.com').fill(email);
+  await settings.getByPlaceholder("you@example.com").fill(email);
   const requestedAtMs = Date.now();
-  await settings.getByText('Send code', { exact: true }).first().click({ force: true });
+  await settings.getByText("Send code", { exact: true }).first().click({ force: true });
 
-  const codeField = settings.getByPlaceholder('123456');
+  const codeField = settings.getByPlaceholder("123456");
   await expect(codeField).toBeVisible({ timeout: 30_000 });
   await codeField.fill(readCode(requestedAtMs));
-  await settings.getByText('Verify', { exact: true }).first().click({ force: true });
+  await settings.getByText("Verify", { exact: true }).first().click({ force: true });
 
   // The settings tab swaps the sign-in row for the account row once signed in.
   await expect(settings.getByText(email).first()).toBeVisible({ timeout: 30_000 });
