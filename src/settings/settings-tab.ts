@@ -24,17 +24,26 @@ export class InohSettingsTab extends PluginSettingTab {
     this.containerEl.addClass("inoh-settings");
   }
 
+  /**
+   * Plan, then the account, then the apps, then the way out — the order the
+   * Inoh app's own settings use, so the two read the same way round.
+   *
+   * Signing out is its own group at the foot rather than a second button on
+   * the account row: it is the one thing here that ends the session, and it
+   * sat next to Refresh, which is the one thing that is safe to press twice.
+   */
   override getSettingDefinitions(): SettingDefinitionItem[] {
     return [
       {
         type: "group",
+        heading: "Plan",
+        items: [this.planDefinition()],
+        visible: () => !this.isSignedOut(),
+      },
+      {
+        type: "group",
         heading: "Account",
-        items: [
-          this.getStartedDefinition(),
-          this.signedInDefinition(),
-          this.planDefinition(),
-          this.emptyDeckDefinition(),
-        ],
+        items: [this.getStartedDefinition(), this.signedInDefinition(), this.emptyDeckDefinition()],
       },
       {
         type: "group",
@@ -51,6 +60,11 @@ export class InohSettingsTab extends PluginSettingTab {
         type: "group",
         heading: "Apps",
         items: appsDefinitions(),
+      },
+      {
+        type: "group",
+        items: [this.signOutDefinition()],
+        visible: () => !this.isSignedOut(),
       },
     ];
   }
@@ -144,10 +158,24 @@ export class InohSettingsTab extends PluginSettingTab {
       name: account.username ?? currentUserEmail ?? "Signed in",
       desc: accountDetails.join(" · "),
       visible: () => !this.isSignedOut(),
+      // Reason: Refresh is the only control here. The account is read-only in
+      // Obsidian — the name and email are changed in the Inoh app — so the
+      // one useful action on this row is reloading what it shows.
       render: (setting) => {
         setting.addButton((button) =>
           button.setButtonText("Refresh").onClick(() => void this.reloadAccountState()),
         );
+      },
+    };
+  }
+
+  /** Ends the session, and says what that costs locally. */
+  private signOutDefinition(): SettingDefinition {
+    return {
+      name: "Sign out",
+      desc: "Clears your session and the deck cached in this vault. Highlighting stops until you sign in again.",
+      visible: () => !this.isSignedOut(),
+      render: (setting) => {
         setting.addButton((button) => {
           // Obsidian's destructive buttons get no hover feedback; dim on hover.
           button.buttonEl.addClass("inoh-hover-dim");
