@@ -77,7 +77,16 @@ function buildAddWordPopup(
       const showMessage = (text: string, tone: "working" | "added" | "failed") => {
         popup.empty();
         popup.addClass("inoh-add-word-popup-answer");
-        popup.createDiv({ cls: `inoh-add-word-message inoh-add-word-message-${tone}`, text });
+        const message = popup.createDiv({
+          cls: `inoh-add-word-message inoh-add-word-message-${tone}`,
+        });
+        // Reason: a spinner while the lookup and the insert are in flight.
+        // Both are network round-trips, and on a slow connection the bare word
+        // "Adding…" gave no sign that anything was still happening.
+        if (tone === "working") {
+          message.createSpan({ cls: "inoh-add-word-spinner" });
+        }
+        message.appendText(text);
         reposition();
       };
 

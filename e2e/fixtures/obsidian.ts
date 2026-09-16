@@ -67,6 +67,20 @@ export type ObsidianSession = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Throws away the plugin's `data.json` in the fixture vault.
+ *
+ * Reason: the config directory is a throwaway but the vault is not, and the
+ * plugin keeps its cached deck in the vault. A run that added a word left a
+ * cache holding it, and the next run — against a freshly seeded account with
+ * five cards — loaded that stale cache and reported seven words in the status
+ * bar, and highlighted a word its account no longer had. The specs looked
+ * flaky; what they actually depended on was which run went before them.
+ */
+function _discardCachedPluginState(): void {
+  rmSync(path.join(VAULT_PATH, ".obsidian", "plugins", PLUGIN_ID, "data.json"), { force: true });
+}
+
 /** Waits for the app to expose a debuggable window. */
 async function connectWhenReady(): Promise<Browser> {
   const deadline = Date.now() + STARTUP_TIMEOUT_MS;
@@ -91,6 +105,7 @@ async function connectWhenReady(): Promise<Browser> {
  * @returns The app window plus a teardown that quits the app
  */
 export async function startObsidian(): Promise<ObsidianSession> {
+  _discardCachedPluginState();
   const userDataDir = mkdtempSync(path.join(tmpdir(), "inoh-obsidian-e2e-"));
   const appBundle = copyUpdatedAppBundle(userDataDir);
   if (!appBundle) {
