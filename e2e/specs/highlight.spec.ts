@@ -113,6 +113,19 @@ test('a deck word written in a note is underlined; a non-deck word is not', asyn
   expect(await readHighlightedWords()).not.toContain(otherWord);
 });
 
+test('hovering an underlined word shows its card', async () => {
+  const deckWord = account.words[0];
+  await openNote(session.page, 'reading.md', `Hover over ${deckWord} to see its card.`);
+  await expect.poll(readHighlightedWords, { timeout: 30_000 }).toContain(deckWord);
+
+  await session.page.locator(`.${HIGHLIGHT_CLASS}`, { hasText: deckWord }).first().hover();
+
+  const tooltip = session.page.locator('.inoh-tooltip');
+  await expect(tooltip).toBeVisible({ timeout: 30_000 });
+  await expect(tooltip.locator('.inoh-tooltip-word')).toHaveText(deckWord);
+  await expect(tooltip.locator('.inoh-tooltip-definition')).not.toBeEmpty();
+});
+
 test('toggling highlighting off removes the underlines', async () => {
   await openNote(session.page, 'reading.md', `Reading about ${account.words[0]}.`);
   await expect.poll(readHighlightedWords, { timeout: 30_000 }).not.toEqual([]);

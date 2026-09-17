@@ -16,18 +16,19 @@
  * once, in inoh-backend/supabase/e2e/README.md.
  */
 
-import { execFileSync } from 'node:child_process';
-import path from 'node:path';
+import { execFileSync } from "node:child_process";
+import path from "node:path";
 
 // Reason: resolved from the working directory rather than this file, so the
 // same wrapper works whether the repo it lives in is CommonJS or ESM (where
 // `__dirname` does not exist). Playwright always runs from the repo root.
-const BACKEND_DIR =
-  process.env.INOH_BACKEND_DIR ?? path.resolve(process.cwd(), '../inoh-backend');
-const CLI_PATH = path.join(BACKEND_DIR, 'supabase/e2e/cli.ts');
+const BACKEND_DIR = process.env.INOH_BACKEND_DIR ?? path.resolve(process.cwd(), "../inoh-backend");
+const CLI_PATH = path.join(BACKEND_DIR, "supabase/e2e/cli.ts");
 
-export type Plan = 'free' | 'plus' | 'pro';
-export type SeedProfile = 'learner' | 'empty' | 'pronunciation-cap' | 'card-cap';
+export type Plan = "free" | "plus" | "pro";
+export type SubscriptionLifecycle =
+  "active" | "cancel_pending" | "downgrade_pending" | "past_due" | "canceled";
+export type SeedProfile = "learner" | "empty" | "pronunciation-cap" | "card-cap";
 
 export type SeededAccount = {
   email: string;
@@ -55,6 +56,7 @@ export type AccountState = {
     scheduledPlan: string | null;
     scheduledBillingInterval: string | null;
     hasStripeCustomer: boolean;
+    stripeSubscriptionId: string | null;
   } | null;
   decks: { id: string; name: string; isDefault: boolean; cardCount: number }[];
   cardCount: number;
@@ -66,6 +68,15 @@ export type AccountState = {
 };
 
 /**
+ * One optional CLI flag: present only when a value was given, so the CLI's own
+ * defaults still apply.
+ */
+const _buildOptionalFlag = (
+  flagName: string,
+  value: string | number | undefined,
+): Record<string, string> => (value === undefined ? {} : { [flagName]: String(value) });
+
+/**
  * Runs one fixture command.
  *
  * @param command - CLI command name, e.g. `reset-user`
@@ -74,16 +85,16 @@ export type AccountState = {
  * @throws When the stack is unreachable or the command rejects its input
  */
 function runFixtureCommand<T>(command: string, flags: Record<string, string> = {}): T {
-  const args = ['run', '--allow-env', '--allow-net', CLI_PATH, command];
+  const args = ["run", "--allow-env", "--allow-net", CLI_PATH, command];
   for (const [name, value] of Object.entries(flags)) {
     args.push(`--${name}`, value);
   }
   try {
     // Reason: stdio 'pipe' for stdout only — the CLI logs progress on stderr,
     // which is inherited so a failing run explains itself in the report.
-    const stdout = execFileSync('deno', args, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'inherit'],
+    const stdout = execFileSync("deno", args, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "inherit"],
     });
     return JSON.parse(stdout) as T;
   } catch (error) {
@@ -98,7 +109,7 @@ function runFixtureCommand<T>(command: string, flags: Record<string, string> = {
 export const assertLocalStackReady = (): void => {
   // The CLI exits non-zero when a check fails, which runFixtureCommand turns
   // into a throw — so reaching the next line is the assertion.
-  runFixtureCommand('doctor');
+  runFixtureCommand("doctor");
 };
 
 /** Deletes, recreates, and seeds one account. */
@@ -107,19 +118,39 @@ export const resetAccount = (options: {
   plan?: Plan;
   profile?: SeedProfile;
 }): SeededAccount =>
-  runFixtureCommand<SeededAccount>('reset-user', {
+  runFixtureCommand<SeededAccount>("reset-user", {
     email: options.email,
-    plan: options.plan ?? 'free',
-    profile: options.profile ?? 'learner',
+    plan: options.plan ?? "free",
+    profile: options.profile ?? "learner",
+  });
+
+/**
+ * Rewrites an existing account's subscription row in place, so a client that is
+ * already signed in can be shown another plan state without signing in again.
+ *
+ * @param email - The account
+ * @param plan - free, plus or pro
+ * @param subscriptionState - Lifecycle state; only meaningful on a paid plan
+ * @returns The account's state after the change
+ */
+export const setSubscription = (
+  email: string,
+  plan: Plan,
+  subscriptionState?: SubscriptionLifecycle,
+): AccountState =>
+  runFixtureCommand<AccountState>("set-subscription", {
+    email,
+    plan,
+    ..._buildOptionalFlag("state", subscriptionState),
   });
 
 /** Waits for the newest sign-in email and returns its six-digit code. */
 export const readSignInCode = (email: string, sinceMs: number): string =>
-  runFixtureCommand<{ code: string }>('otp', {
+  runFixtureCommand<{ code: string }>("otp", {
     email,
-    'newer-than-ms': String(sinceMs),
+    "newer-than-ms": String(sinceMs),
   }).code;
 
 /** What the client actually wrote to the database. */
 export const readAccountState = (email: string): AccountState =>
-  runFixtureCommand<AccountState>('state', { email });
+  runFixtureCommand<AccountState>("state", { email });
