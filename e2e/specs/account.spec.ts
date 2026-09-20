@@ -4,7 +4,7 @@
  * know where they stand and where to go.
  */
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import {
   assertLocalStackReady,
   readSignInCode,
@@ -18,11 +18,9 @@ import {
   startObsidian,
   type ObsidianSession,
 } from "../fixtures/obsidian";
+import { expectPlanRow, findPageWithModal, planRowOf, type PlanRow } from "../fixtures/plan-row";
 
 const EMAIL = "e2e-obsidian-plan@test.com";
-const PLAN_ROW_NAMES = /^(Free plan|Inoh Plus|Inoh Pro)$/;
-
-type PlanRow = { name: string; button: string; desc?: RegExp };
 
 let session: ObsidianSession;
 
@@ -39,57 +37,11 @@ test.afterAll(async () => {
   await session?.close();
 });
 
-/** The Plan row: the one whose name is a plan name. */
-const planRowOf = (settings: Page) =>
-  settings
-    .locator(".setting-item")
-    .filter({ has: settings.locator(".setting-item-name", { hasText: PLAN_ROW_NAMES }) })
-    .first();
-
-/**
- * Asks the plugin to re-read the account, then waits for the Plan row to show
- * the expected state.
- *
- * Reason: Refresh repaints the tab at once and again when the account read
- * lands, so a single read straight after the click can see the old plan.
- */
-async function expectPlanRow(settings: Page, expected: PlanRow): Promise<void> {
-  const accountRow = settings.locator(".setting-item", { hasText: EMAIL }).first();
-  await accountRow.getByRole("button", { name: "Refresh" }).click({ force: true });
-  const planRow = planRowOf(settings);
-  await expect(planRow.locator(".setting-item-name")).toHaveText(expected.name, {
-    timeout: 30_000,
-  });
-  await expect(planRow.locator("button")).toHaveText(expected.button);
-  if (expected.desc) {
-    await expect(planRow.locator(".setting-item-description")).toHaveText(expected.desc);
-  }
-}
-
-/** Whichever open window the plan modal rendered into. */
-async function findPageWithModal(preferred: Page): Promise<Page> {
-  const candidates = [
-    preferred,
-    ...preferred
-      .context()
-      .pages()
-      .filter((page) => page !== preferred),
-  ];
-  const deadline = Date.now() + 30_000;
-  while (Date.now() < deadline) {
-    for (const candidate of candidates) {
-      if ((await candidate.locator(".inoh-plan-card").count()) > 0) return candidate;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  throw new Error("The upgrade modal never opened in any Obsidian window.");
-}
-
 test("a free account sees Free plan and Upgrade, which opens Plus and Pro with live prices", async () => {
   setSubscription(EMAIL, "free");
   const settings = await openPluginSettings(session.page);
   try {
-    await expectPlanRow(settings, { name: "Free plan", button: "Upgrade" });
+    await expectPlanRow(settings, EMAIL, { name: "Free plan", button: "Upgrade" });
     await planRowOf(settings).getByRole("button", { name: "Upgrade" }).click({ force: true });
 
     // Reason: the modal opens in whichever window owns the plugin's app
@@ -163,7 +115,7 @@ for (const { title, plan, state, expected } of PAID_STATES) {
     setSubscription(EMAIL, plan, state);
     const settings = await openPluginSettings(session.page);
     try {
-      await expectPlanRow(settings, expected);
+      await expectPlanRow(settings, EMAIL, expected);
     } finally {
       await closeSettings(session.page);
     }
