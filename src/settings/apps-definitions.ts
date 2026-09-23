@@ -1,6 +1,7 @@
 import { setIcon, type SettingDefinition } from "obsidian";
 import {
   CHROME_EXTENSION_URL,
+  CONNECT_CLAUDE_URL,
   DOCS_URL,
   IOS_APP_URL,
   RAYCAST_EXTENSION_URL,
@@ -17,6 +18,7 @@ import { APP_ICON_IDS } from "./app-icons";
  */
 export function appsDefinitions(): SettingDefinition[] {
   const apps: { name: string; icon: string; url: string }[] = [
+    { name: "Connect to Claude", icon: APP_ICON_IDS.claude, url: CONNECT_CLAUDE_URL },
     { name: "iOS app", icon: APP_ICON_IDS.apple, url: IOS_APP_URL },
     { name: "Web app", icon: "globe", url: WEB_APP_URL },
     { name: "Chrome extension", icon: APP_ICON_IDS.chrome, url: CHROME_EXTENSION_URL },
@@ -24,7 +26,7 @@ export function appsDefinitions(): SettingDefinition[] {
     // Reason: a robot rather than a brand mark, the same choice inoh.app
     // makes, because this row is not one product — it is every assistant that
     // can connect. It opens the instructions, not the server address.
-    { name: "MCP server", icon: "bot", url: DOCS_URL },
+    { name: "AI Assistants", icon: "bot", url: DOCS_URL },
   ];
   return apps.map(({ name, icon, url }) => ({
     name,

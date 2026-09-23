@@ -25,6 +25,8 @@ The plugin works on the free plan. Daily reviews are unlimited on every Inoh pla
 
 Inoh is one account across several places, all listed in the plugin's settings: the [iOS app](https://apps.apple.com/app/id6799947889), the [web app](https://app.inoh.app), the [Chrome extension](https://chromewebstore.google.com/detail/fihdhfkhbocbgmnhdigkljknabnjeoai), the [Raycast extension](https://www.raycast.com/tai/inoh), and an MCP server that lets an AI assistant make cards for you — see [docs.inoh.app](https://docs.inoh.app).
 
+In settings, **Apps → [Connect to Claude](https://docs.inoh.app/#claude)** opens the guide to practicing your deck with Claude. **AI Assistants** keeps the full set of connection guides available.
+
 ## Network use disclosure
 
 - The plugin talks to Inoh's backend (Supabase) to sign you in and download your vocabulary deck.

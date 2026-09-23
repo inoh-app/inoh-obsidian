@@ -20,6 +20,7 @@ export const APP_ICON_IDS = {
   apple: "inoh-apple",
   raycast: "inoh-raycast",
   chrome: "inoh-chrome",
+  claude: "inoh-claude",
 } as const;
 
 /**
@@ -34,4 +35,11 @@ export function registerAppIcons(): void {
   addIcon(APP_ICON_IDS.apple, scaleTo100(APPLE_PATH));
   addIcon(APP_ICON_IDS.raycast, scaleTo100(RAYCAST_PATH));
   addIcon(APP_ICON_IDS.chrome, scaleTo100(CHROME_PATH));
+  // Matches the stroked Claude mark on the Inoh landing page.
+  addIcon(
+    APP_ICON_IDS.claude,
+    `<g transform="scale(4.166667)"><path
+      d="M12 3.5V20.5 M3.5 12H20.5 M6 6L18 18 M18 6L6 18"
+      fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></g>`,
+  );
 }

@@ -83,10 +83,10 @@ test('settings read plan, account, apps, sign out — and the account row is rea
   }
 });
 
-test('the Apps group lists the MCP server, with a mark that rendered', async () => {
+test('the Apps group lists AI Assistants, with a mark that rendered', async () => {
   const settings = await openPluginSettings(session.page);
   try {
-    const mcpRow = settings.locator('.setting-item-name', { hasText: 'MCP server' });
+    const mcpRow = settings.locator('.setting-item-name', { hasText: 'AI Assistants' });
     await expect(mcpRow).toHaveCount(1, { timeout: 30_000 });
     // Reason: the Apps group is the last one on the tab, so in a short window
     // the row is attached but scrolled past — the same reason the fixture

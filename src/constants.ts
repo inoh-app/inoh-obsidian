@@ -41,11 +41,14 @@ export const BILLING_URL = `${WEB_APP_URL}/billing`;
 export const GENERATE_URL = `${WEB_APP_URL}/generate`;
 
 /**
- * The docs host, which is where the Apps group's MCP row goes. The
+ * The docs host, which is where the Apps group's AI Assistants row goes. The
  * instructions rather than the server address `https://mcp.inoh.app/mcp`,
  * which answers a browser with a 405 and tells a user nothing.
  */
 export const DOCS_URL = "https://docs.inoh.app";
+
+/** Opens the Claude connection guide directly. */
+export const CONNECT_CLAUDE_URL = `${DOCS_URL}/#claude`;
 
 /** Product pages for the other Inoh ecosystem apps, shown in the Apps settings group. */
 export const IOS_APP_URL = "https://apps.apple.com/app/id6799947889";
