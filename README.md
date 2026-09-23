@@ -19,7 +19,7 @@
 
 ## Plans
 
-The plugin works on the free plan. Daily reviews are unlimited on every Inoh plan. Deck size and a few other limits depend on your Inoh plan, and you can upgrade from the plugin's settings without leaving Obsidian — checkout opens in your browser and your plan updates when you come back.
+The plugin works on the free plan. Deck size and a few other limits depend on your Inoh plan, and you can upgrade from the plugin's settings without leaving Obsidian — checkout opens in your browser and your plan updates when you come back.
 
 ## The rest of Inoh
 
