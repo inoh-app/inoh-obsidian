@@ -21,7 +21,7 @@ import {
  * enforced server-side; these strings only pitch them.
  */
 const TIER_PITCHES: Record<PaidTier, string> = {
-  plus: "Up to 1,000 cards, unlimited daily reviews + 1,000 pronunciation practices/month.",
+  plus: "Up to 1,000 cards + 1,000 pronunciation practices/month.",
   pro: "Everything in Plus, unlimited cards + 10,000 pronunciation practices/month.",
 };
 
