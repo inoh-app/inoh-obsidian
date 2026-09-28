@@ -4,9 +4,9 @@
 
 ## Features
 
-- **Deck-word highlighting.** Words from your deck get a dotted underline as you write, including inflected forms (*crossed* for *cross*, *went* for *go*) and multi-word idioms (*counted my blessings* for *count one's blessings*, *gave the idea up* for *give up*). Matching is exact against real English forms: *brain* never lights up *brainy*.
+- **Deck-word highlighting.** Words from your deck get a dotted underline as you write, including inflected forms (_crossed_ for _cross_, _went_ for _go_) and multi-word idioms (_counted my blessings_ for _count one's blessings_, _gave the idea up_ for _give up_). Matching is exact against real English forms: _brain_ never lights up _brainy_.
 - **Hover or tap to review.** Hovering a highlighted word shows its definition, phonetic, example sentence, and pronunciation audio, with a link to the word in the Inoh app, plus a "Remove from deck" action for words you've finished learning. On mobile, where hover doesn't exist, tapping a highlighted word opens the same card in a dialog.
-- **Add words without leaving Obsidian.** Select a word (or phrase) and a **＋ Add to Inoh** button pops up right above it; on mobile the same action lives in the long-press menu. There's also an **Add selected word to deck** command, which works on the word under the cursor too. Inflected forms find their entry (*flipped* adds *flip*), and if the word has several meanings you pick the right one from a list.
+- **Add words without leaving Obsidian.** Select a word (or phrase) and a **＋ Add to Inoh** button pops up right above it; on mobile the same action lives in the long-press menu. There's also an **Add selected word to deck** command, which works on the word under the cursor too. Inflected forms find their entry (_flipped_ adds _flip_), and if the word has several meanings you pick the right one from a list.
 - **Keep a word the dictionary doesn't have.** If Inoh has never heard of the word, the plugin offers to save it to your drafts, and you finish it at [app.inoh.app](https://app.inoh.app) — where you either generate your own card for it or request it for the public dictionary.
 - **Works offline.** Your deck is cached locally, so highlighting keeps working without a connection.
 
@@ -44,3 +44,7 @@ Building on the plugin, or running it from source? See [DEVELOPMENT.md](DEVELOPM
 ## License
 
 [MIT](LICENSE)
+
+## Push checks
+
+Every branch push runs formatting, lint, and AI review in GitHub Actions. These checks report results after the push and do not change source files. The AI job requires an `ANTHROPIC_API_KEY` repository Actions secret. Review findings appear in the workflow job summary.
