@@ -50,7 +50,6 @@ test("a free account sees Free plan and Upgrade, which opens Plus and Pro with l
     const cards = modalHost.locator(".inoh-plan-card");
     await expect(cards).toHaveCount(2);
     await expect(cards.locator(".inoh-plan-name")).toHaveText(["Inoh Plus", "Inoh Pro"]);
-    await expect(modalHost.locator(".inoh-plan-badge")).toHaveText(["Most popular"]);
     // Prices come from Stripe through subscription-prices; the skeletons give way to them.
     await expect(cards.locator(".inoh-plan-price").first()).toContainText(/\$\d+\.\d{2}/, {
       timeout: 30_000,

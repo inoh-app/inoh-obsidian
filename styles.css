@@ -493,8 +493,8 @@ a.inoh-add-word-link:hover {
 
 /* ========= Upgrade modal plan cards ========= */
 
-/* Styled after the inoh.app pricing cards: white cards on the cream dialog,
-   brand-red accents, and a "Most popular" badge on the highlighted tier. */
+/* Styled after the inoh.app pricing cards: white cards on the cream dialog
+   and brand-red accents, with no tier highlighted over the other. */
 .inoh-modal .inoh-plan-cards {
   display: flex;
   flex-direction: column;
@@ -508,23 +508,6 @@ a.inoh-add-word-link:hover {
   border: 1px solid var(--inoh-card-border);
   border-radius: 12px;
   padding: 16px;
-}
-
-.inoh-modal .inoh-plan-card-highlighted {
-  border-color: var(--inoh-brand);
-  box-shadow: 0 10px 30px rgba(26, 24, 21, 0.07);
-}
-
-.inoh-modal .inoh-plan-badge {
-  position: absolute;
-  top: -9px;
-  right: 14px;
-  background-color: var(--inoh-brand);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
 }
 
 .inoh-modal .inoh-plan-name {

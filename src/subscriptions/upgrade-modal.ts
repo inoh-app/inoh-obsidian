@@ -25,9 +25,6 @@ const TIER_PITCHES: Record<PaidTier, string> = {
   pro: "Everything in Plus, unlimited cards + 10,000 pronunciation practices/month.",
 };
 
-/** Plus is the target middle tier, so its card carries the "Most popular" badge. */
-const HIGHLIGHTED_TIER: PaidTier = "plus";
-
 /**
  * Sends the user straight to Stripe Checkout for a paid Inoh tier — no web app
  * in between. Opened from the plugin settings.
@@ -108,17 +105,13 @@ export class UpgradeModal extends Modal {
   /**
    * One tier's card, styled after the inoh.app pricing cards: name, monthly
    * price, pitch, and a checkout button per billing interval. Both buttons
-   * on both cards start checkout; the highlighted tier only gets a badge.
+   * on both cards start checkout. Neither tier is highlighted over the other.
    */
   private renderTierCard(container: HTMLElement, tier: PaidTier): void {
     const tierPrices = this.prices[tier];
     const savingPercent = yearlySavingPercent(tierPrices);
 
     const card = container.createDiv({ cls: "inoh-plan-card" });
-    if (tier === HIGHLIGHTED_TIER) {
-      card.addClass("inoh-plan-card-highlighted");
-      card.createDiv({ cls: "inoh-plan-badge", text: "Most popular" });
-    }
 
     card.createDiv({ cls: "inoh-plan-name", text: `Inoh ${TIER_DISPLAY_NAMES[tier]}` });
     if (tierPrices.month || this.isLoadingPrices) {
