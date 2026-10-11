@@ -36,7 +36,7 @@ jobs:
           fi
           mapfile -d '' -t LINT_FILES < <(git diff --name-only -z --diff-filter=ACMR "$BASE_SHA" HEAD -- '*.js' '*.jsx' '*.ts' '*.tsx')
           if (( ${#LINT_FILES[@]} > 0 )); then
-            pnpm exec eslint --max-warnings 0 "${LINT_FILES[@]}"
+            pnpm exec eslint --max-warnings 0 --no-warn-ignored "${LINT_FILES[@]}"
           fi
 
   ai-review:
