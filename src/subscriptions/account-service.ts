@@ -1,6 +1,5 @@
 import { Notice, type App } from "obsidian";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { fetchUsername } from "../supabase";
 import { BILLING_URL } from "../constants";
 import { openExternalUrl } from "../ui";
 import {
@@ -14,15 +13,13 @@ import { UpgradeModal } from "./upgrade-modal";
 
 /**
  * Owns what the signed-in account is entitled to, beyond the session itself:
- * the subscription plan, the display name, and the round-trips (checkout,
+ * the subscription plan and the round-trips (checkout,
  * the web app's Plan & Billing page) that change the plan.
  */
 export class AccountService {
   subscription: SubscriptionState = FREE_SUBSCRIPTION;
   /** True when the last plan read failed, so "Free plan" may be wrong. */
   subscriptionCheckFailed = false;
-  /** Display name from the Inoh app; null for accounts that never set one. */
-  username: string | null = null;
   /** Which flow the user was sent to, until they come back from it. */
   private pendingStripeReturn: "checkout" | "billing" | null = null;
 
@@ -31,12 +28,12 @@ export class AccountService {
     private readonly supabase: SupabaseClient,
     /** The signed-in user's id, read live so sign-in/out is always current. */
     private readonly getUserId: () => string | null,
-    /** Repaints whatever shows the plan and name — the settings tab. */
+    /** Repaints whatever shows the plan — the settings tab. */
     private readonly onChanged: () => void,
   ) {}
 
   /**
-   * Reads the current plan and display name. Falls back to free so features
+   * Reads the current plan. Falls back to free so features
    * stay gated, but records the failure — silently showing "Free plan" to a
    * paying subscriber is indistinguishable from them genuinely not having paid.
    */
@@ -45,7 +42,6 @@ export class AccountService {
     if (!userId) {
       this.subscription = FREE_SUBSCRIPTION;
       this.subscriptionCheckFailed = false;
-      this.username = null;
       this.onChanged();
       return;
     }
@@ -56,13 +52,6 @@ export class AccountService {
       console.error("Inoh: could not read the subscription plan", error);
       this.subscription = FREE_SUBSCRIPTION;
       this.subscriptionCheckFailed = true;
-    }
-    try {
-      this.username = await fetchUsername(this.supabase, userId);
-    } catch (error) {
-      // A missing display name is cosmetic; the email still identifies them.
-      console.error("Inoh: could not read the profile", error);
-      this.username = null;
     }
     this.onChanged();
   }
@@ -133,7 +122,6 @@ export class AccountService {
   reset(): void {
     this.subscription = FREE_SUBSCRIPTION;
     this.subscriptionCheckFailed = false;
-    this.username = null;
     this.pendingStripeReturn = null;
   }
 }

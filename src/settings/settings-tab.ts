@@ -99,7 +99,7 @@ export class InohSettingsTab extends PluginSettingTab {
   }
 
   /**
-   * Reloads everything shown in the Account group: deck, plan, username.
+   * Reloads everything shown in the Account group: deck and plan.
    * Used on sign-in and by the Refresh button — one deliberately covers the
    * other, so "I refreshed but it still shows the old plan" cannot happen.
    * Repaints once immediately so rows flip, then again once both loads land.
@@ -142,25 +142,22 @@ export class InohSettingsTab extends PluginSettingTab {
   }
 
   private signedInDefinition(): SettingDefinition {
-    const { account, currentUserEmail } = this.plugin;
+    const { currentUserEmail } = this.plugin;
     const cardCount = this.plugin.deckService.getCards().length;
     const fetchedAt = this.plugin.deckService.getFetchedAt();
 
-    // Accounts are created by email OTP, so a display name is optional — fall
-    // back to the email rather than showing a nameless row.
     const accountDetails = [
-      account.username ? currentUserEmail : null,
       `${cardCount} ${cardCount === 1 ? "word" : "words"}`,
       fetchedAt ? `synced ${new Date(fetchedAt).toLocaleString()}` : "not synced yet",
     ].filter(Boolean);
 
     return {
-      name: account.username ?? currentUserEmail ?? "Signed in",
+      name: currentUserEmail ?? "Signed in",
       desc: accountDetails.join(" · "),
       visible: () => !this.isSignedOut(),
       // Reason: Refresh is the only control here. The account is read-only in
-      // Obsidian — the name and email are changed in the Inoh app — so the
-      // one useful action on this row is reloading what it shows.
+      // Obsidian, so the one useful action on this row is reloading what it
+      // shows.
       render: (setting) => {
         setting.addButton((button) =>
           button.setButtonText("Refresh").onClick(() => void this.reloadAccountState()),

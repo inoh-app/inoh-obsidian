@@ -33,7 +33,6 @@ export type SeedProfile = "learner" | "empty" | "pronunciation-cap" | "card-cap"
 export type SeededAccount = {
   email: string;
   userId: string;
-  username: string | null;
   plan: Plan;
   profile: SeedProfile;
   deckId: string;
@@ -47,7 +46,6 @@ export type SeededAccount = {
 export type AccountState = {
   email: string;
   userId: string;
-  username: string | null;
   plan: string;
   subscription: {
     status: string;
