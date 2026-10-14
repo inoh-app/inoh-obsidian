@@ -22,7 +22,12 @@ import {
 import { DeckIndex, DeckMatcher } from "./matching";
 import { DEFAULT_SETTINGS, InohSettingsTab } from "./settings";
 import { AccountService } from "./subscriptions";
-import { clearStoredSession, createSupabaseClient, signOutUser } from "./supabase";
+import {
+  clearStoredSession,
+  createSupabaseClient,
+  recordClientOpened,
+  signOutUser,
+} from "./supabase";
 import { StatusBar } from "./ui";
 import type { DeckCache, DeckCard, InohSettings, PluginData } from "./types";
 
@@ -169,6 +174,11 @@ export default class InohPlugin extends Plugin implements MatcherProvider {
       // initializeSession leaves the plan stuck at its free default.
       if (didSignedInUserChange) {
         void this.account.refresh();
+        // Reason: initializeSession records startup too and may win the race;
+        // the backend keeps one event per user per day, so both can call.
+        if (nextUserId) {
+          void recordClientOpened(this.supabase, this.manifest.version);
+        }
       }
     });
     this.register(() => authListener.subscription.unsubscribe());
@@ -275,6 +285,7 @@ export default class InohPlugin extends Plugin implements MatcherProvider {
       this.currentUserId = session?.user.id ?? null;
       this.statusBar.update();
       if (session) {
+        void recordClientOpened(this.supabase, this.manifest.version);
         await Promise.all([this.deckService.refresh(), this.account.refresh()]);
       }
     } catch (error) {

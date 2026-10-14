@@ -33,6 +33,7 @@ In settings, **Apps → [Connect to Claude](https://docs.inoh.app/#claude)** ope
 - When you add a word to your deck, that word is sent to Inoh's backend to look it up in the dictionary. Nothing else from your vault is ever uploaded.
 - When you save a word the dictionary doesn't have, that word is sent to Inoh's backend as a draft on your account, so you can finish it in the Inoh app.
 - If you choose to upgrade, the plugin asks Inoh's backend for a Stripe Checkout link and opens it in your browser. Payment details go to Stripe and are never seen by the plugin; it only reads back whether your account is on the Free, Plus, or Pro plan.
+- While you are signed in, the plugin tells Inoh's backend once a day that you opened it, along with the plugin version, so we can count how many people use the plugin. The backend records this in PostHog against your account. The plugin itself contains no analytics code. See the [privacy policy](https://inoh.app/privacy).
 - Auth tokens are stored in device-local storage, never in vault files, so they are not carried along by vault sync services.
 
 ## Support
